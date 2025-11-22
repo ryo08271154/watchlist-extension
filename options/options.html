@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>視聴記録 拡張機能設定</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <h1>視聴記録 拡張機能設定</h1>
+    <form id="settingsForm">
+      <label for="url">視聴記録のURL:</label>
+      <input
+        type="url"
+        id="url"
+        placeholder="視聴記録のURLを入力してください"
+      />
+      <label for="showReviewButton">エピソードのレビューボタンを表示する</label>
+      <input type="checkbox" name="showReviewButton" id="showReviewButton" />
+      <label for="showReviewDialog"
+        >エピソード視聴終了後にレビューダイアログを表示する</label
+      >
+      <input type="checkbox" name="showReviewDialog" id="showReviewDialog" />
+      <button id="save">保存する</button>
+    </form>
+  </body>
+  <script src="validator.js"></script>
+  <script src="options.js"></script>
+</html>

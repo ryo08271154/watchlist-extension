@@ -1,0 +1,193 @@
+name: Auto Release when manifest version changes
+on:
+  push:
+    branches:
+      - main
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch full history for tag comparison
+
+      - name: Check if manifest.json changed
+        id: diff
+        run: |
+          # Check if this is the first commit
+          if ! git rev-parse HEAD^ >/dev/null 2>&1; then
+            echo "This is the first commit. Checking manifest.json."
+            if [ -f "manifest.json" ]; then
+              echo "changed=true" >> $GITHUB_OUTPUT
+            else
+              echo "changed=false" >> $GITHUB_OUTPUT
+            fi
+          elif git diff --name-only HEAD^ HEAD | grep -q "manifest.json"; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Stop if manifest.json not changed
+        if: steps.diff.outputs.changed == 'false'
+        run: |
+          echo "No changes in manifest.json, skipping release."
+          exit 0
+
+      - name: Get new manifest version
+        id: new_version
+        run: |
+          NEW_VERSION=$(jq -r '.version' manifest.json)
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION"
+
+      - name: Get old manifest version
+        id: old_version
+        run: |
+          if git rev-parse HEAD^ >/dev/null 2>&1 && git show HEAD^:manifest.json >/dev/null 2>&1; then
+            OLD_VERSION=$(git show HEAD^:manifest.json | jq -r '.version')
+          else
+            OLD_VERSION="0.0.0"
+          fi
+          echo "version=$OLD_VERSION" >> $GITHUB_OUTPUT
+          echo "Old version: $OLD_VERSION"
+
+      - name: Compare versions
+        id: compare
+        run: |
+          NEW_VER="${{ steps.new_version.outputs.version }}"
+          OLD_VER="${{ steps.old_version.outputs.version }}"
+          if [ "$NEW_VER" != "$OLD_VER" ]; then
+            echo "updated=true" >> $GITHUB_OUTPUT
+            echo "Version has been updated: $OLD_VER → $NEW_VER"
+          else
+            echo "updated=false" >> $GITHUB_OUTPUT
+            echo "Version is the same: $NEW_VER"
+          fi
+
+      - name: Stop if version not updated
+        if: steps.compare.outputs.updated == 'false'
+        run: |
+          echo "The version in manifest.json has not changed. Skipping release."
+          exit 0
+
+      - name: Check if tag already exists
+        id: tag_check
+        run: |
+          TAG="v${{ steps.new_version.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG already exists."
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Tag $TAG does not exist. Creating it."
+          fi
+
+      - name: Stop if tag already exists
+        if: steps.tag_check.outputs.exists == 'true'
+        run: |
+          echo "Tag v${{ steps.new_version.outputs.version }} already exists. Skipping release."
+          exit 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          npm install -g web-ext
+          npm install -D crx
+
+      - name: Get extension name
+        id: ext_name
+        run: |
+          EXT_NAME="watchlist-extension"
+          echo "name=$EXT_NAME" >> $GITHUB_OUTPUT
+          echo "Extension name: $EXT_NAME"
+
+      - name: Create PEM file from secret
+        run: |
+          echo "${{ secrets.CHROME_EXTENSION_KEY }}" > key.pem
+          chmod 600 key.pem
+
+      - name: Build CRX file
+        run: |
+          # Verify manifest.json exists
+          if [ ! -f "manifest.json" ]; then
+            echo "Error: manifest.json not found"
+            ls -la
+            exit 1
+          fi
+
+          echo "=== Directory structure ==="
+          ls -la
+
+          # Create a temporary build script
+          cat > build-crx.js << 'EOF'
+          const crx = require('crx');
+          const fs = require('fs');
+          const path = require('path');
+
+          const privateKeyPem = fs.readFileSync('./key.pem', 'utf8');
+          const extPath = '.';
+          const outputPath = process.argv[2];
+
+          const crxBuilder = new crx({
+            privateKey: privateKeyPem
+          });
+
+          crxBuilder.load(extPath).then(() => {
+            return crxBuilder.pack();
+          }).then(crxBuffer => {
+            fs.writeFileSync(outputPath, crxBuffer);
+            console.log(`CRX file created: ${outputPath}`);
+          }).catch(err => {
+            console.error('Error building CRX:', err);
+            process.exit(1);
+          });
+          EOF
+
+          # Run the build script
+          node build-crx.js "${{ steps.ext_name.outputs.name }}-v${{ steps.new_version.outputs.version }}.crx"
+
+          echo "CRX file created"
+          ls -lh *.crx
+
+      - name: Get commits since last release
+        id: commits
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            echo "Previous tag: $LAST_TAG"
+            COMMITS=$(git log --pretty=format:"- %s (%an)" "$LAST_TAG"..HEAD)
+          else
+            echo "No tags exist. Fetching all commits."
+            COMMITS=$(git log --pretty=format:"- %s (%an)")
+          fi
+          # Use a safer delimiter
+          delimiter="$(openssl rand -hex 8)"
+          echo "messages<<${delimiter}" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "${delimiter}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.new_version.outputs.version }}
+          name: v${{ steps.new_version.outputs.version }}
+          body: |
+            ## 📋 Changelog
+            ${{ steps.commits.outputs.messages }}
+          files: |
+            ${{ steps.ext_name.outputs.name }}-v${{ steps.new_version.outputs.version }}.crx
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clean up
+        if: always()
+        run: |
+          rm -f key.pem

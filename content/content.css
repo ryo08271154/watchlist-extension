@@ -1,0 +1,89 @@
+#watchlistReviewButton {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(25, 118, 210, 0.8);
+  color: #fff;
+  font-size: 1.5em;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 10000;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+}
+#watchlistReviewDialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: fit-content;
+  height: fit-content;
+  max-width: 90vw;
+  max-height: 90vh;
+  border: none;
+  padding: 0;
+  background: transparent;
+  z-index: 10001;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+#watchlistReviewButton:hover,
+#watchlistReviewButton:focus {
+  background: rgba(21, 101, 192, 0.9);
+  transform: scale(1.1);
+  box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.3);
+}
+
+#watchlistReviewDialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+#watchlistReviewDialogContent {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  min-width: 250px; /* 最小幅を設定 */
+  white-space: pre-line;
+}
+
+#watchlistReviewDialogContent button {
+  padding: 0.8em 1.5em;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+#watchlistReviewDialogContent #watchlistReviewSubmitButton {
+  background: #1976d2;
+  color: #fff;
+}
+
+#watchlistReviewDialogContent #watchlistReviewSubmitButton:hover,
+#watchlistReviewDialogContent #watchlistReviewSubmitButton:focus {
+  /* IDを修正 */
+  background: #1565c0;
+}
+
+#watchlistReviewDialogContent #watchlistReviewCloseButton {
+  background: #ccc;
+  color: #333;
+}
+
+#watchlistReviewDialogContent #watchlistReviewCloseButton:hover,
+#watchlistReviewDialogContent #watchlistReviewCloseButton:focus {
+  background: #bbb;
+}

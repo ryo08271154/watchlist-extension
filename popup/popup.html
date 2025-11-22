@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>視聴記録</title>
+    <link rel="stylesheet" href="popup.css" />
+    <style></style>
+  </head>
+  <body>
+    <div class="header-container">
+      <h1>視聴記録</h1>
+      <input type="search" id="searchInput" placeholder="検索語句を入力" />
+      <button id="searchButton">検索</button>
+    </div>
+    <ul id="messages" class="messages" style="display: none"></ul>
+    <div id="titleContainer" style="display: none">
+      <a id="titleDetail" target="_blank">
+        <h2 id="titleName"></h2>
+        <p id="titleDescription"></p>
+      </a>
+    </div>
+    <div id="episodeContainer" style="display: none">
+      <a id="episodeDetail" target="_blank">
+        <h3 id="episodeName"></h3>
+        <p id="episodeDate"></p>
+        <p id="episodeNumber"></p>
+        <p id="episodeDescription"></p>
+      </a>
+    </div>
+    <div id="buttonContainer" style="display: none">
+      <button id="episodeListButton">エピソード一覧</button>
+      <button id="reviewButton">タイトルをレビュー</button>
+      <button id="episodeReviewButton" style="display: none">
+        エピソードをレビュー
+      </button>
+    </div>
+    <div id="searchResult" style="display: none"></div>
+    <script src="../options/validator.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
