@@ -3,7 +3,7 @@
   "description": "視聴記録を簡単に保存するための拡張機能です。",
   "homepage_url": "https://github.com/ryo08271154/watchlist-extension",
   "author": "ryo08271154",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "manifest_version": 3,
   "icons": {
     "16": "icons/icon16.png",
@@ -14,7 +14,11 @@
   "host_permissions": ["*://*/*"],
   "background": {
     "service_worker": "background.js",
+    "scripts": ["background.js"],
     "type": "module"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; connect-src 'self' http: https:"
   },
   "content_scripts": [
     {
@@ -33,5 +37,14 @@
     "default_popup": "popup/popup.html",
     "default_title": "視聴記録"
   },
-  "options_page": "options/options.html"
+  "options_page": "options/options.html",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "watchlist@ryo08271154",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  }
 }

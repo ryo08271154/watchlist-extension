@@ -42,11 +42,14 @@ const getMessages = () => {
     });
   });
 };
+const hideSearch = () => {
+  searchInput.style.display = "none";
+  searchButton.style.display = "none";
+};
 const loadMessages = async () => {
   const messages = await getMessages();
   if (messages.some((msg) => msg.type === "error")) {
-    searchInput.style.display = "none";
-    searchButton.style.display = "none";
+    hideSearch();
   }
   for (const message of messages) {
     addMessage(message.type, message.message);
@@ -61,10 +64,18 @@ const addMessage = (type, message) => {
   messages.appendChild(li);
 };
 async function loadInitialData() {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  if (!(userAgent.includes("chrome") || userAgent.includes("firefox"))) {
+    hideSearch();
+    addMessage(
+      "warning",
+      "このブラウザでは一部の機能が動作しない可能性があります。"
+    );
+  }
+
   chrome.storage.local.get("watchlistUrl", (data) => {
     if (!data.watchlistUrl || !data.watchlistUrl.startsWith("http://")) {
-      searchInput.style.display = "none";
-      searchButton.style.display = "none";
+      hideSearch();
       addMessage(
         "error",
         "設定がされていません。オプション画面で設定をしてください。"

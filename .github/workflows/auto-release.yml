@@ -114,7 +114,7 @@ jobs:
           echo "${{ secrets.CHROME_EXTENSION_KEY }}" > key.pem
           chmod 600 key.pem
 
-      - name: Build CRX file
+      - name: Build CRX file (Chrome)
         run: |
           # Verify manifest.json exists
           if [ ! -f "manifest.json" ]; then
@@ -157,16 +157,43 @@ jobs:
           echo "CRX file created"
           ls -lh *.crx
 
+      - name: Build and Sign XPI file (Firefox)
+        run: |
+          # Create artifacts directory for web-ext output
+          mkdir -p web-ext-artifacts
+
+          # Sign the extension with AMO
+          web-ext sign \
+            --channel=unlisted \
+            --api-key="${{ secrets.WEB_EXT_API_KEY }}" \
+            --api-secret="${{ secrets.WEB_EXT_API_SECRET }}" \
+            --artifacts-dir=web-ext-artifacts
+
+          # Find the signed xpi file
+          SIGNED_XPI=$(ls web-ext-artifacts/*.xpi | head -n 1)
+
+          if [ -z "$SIGNED_XPI" ]; then
+            echo "Error: No signed XPI file found"
+            ls -la web-ext-artifacts/
+            exit 1
+          fi
+
+          # Rename to our desired filename
+          mv "$SIGNED_XPI" "${{ steps.ext_name.outputs.name }}-v${{ steps.new_version.outputs.version }}.xpi"
+
+          echo "XPI file created and signed"
+          ls -lh *.xpi
+
       - name: Get commits since last release
         id: commits
         run: |
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -n "$LAST_TAG" ]; then
             echo "Previous tag: $LAST_TAG"
-            COMMITS=$(git log --pretty=format:"- %s (%an)" "$LAST_TAG"..HEAD)
+            COMMITS=$(git log --pretty=format:"- %s" "$LAST_TAG"..HEAD)
           else
             echo "No tags exist. Fetching all commits."
-            COMMITS=$(git log --pretty=format:"- %s (%an)")
+            COMMITS=$(git log --pretty=format:"- %s")
           fi
           # Use a safer delimiter
           delimiter="$(openssl rand -hex 8)"
@@ -184,6 +211,7 @@ jobs:
             ${{ steps.commits.outputs.messages }}
           files: |
             ${{ steps.ext_name.outputs.name }}-v${{ steps.new_version.outputs.version }}.crx
+            ${{ steps.ext_name.outputs.name }}-v${{ steps.new_version.outputs.version }}.xpi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -191,3 +219,4 @@ jobs:
         if: always()
         run: |
           rm -f key.pem
+          rm -rf web-ext-artifacts

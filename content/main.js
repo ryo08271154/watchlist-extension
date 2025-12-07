@@ -6,11 +6,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.action === "getTitle") {
     if (titleInfo.name && document.title.includes(titleInfo.name.slice(0, 6))) {
       sendResponse({ title: titleInfo });
-      return true;
+    } else {
+      getTitle().then((title) => {
+        sendResponse({ title: title });
+      });
     }
-    getTitle().then((title) => {
-      sendResponse({ title: title });
-    });
   } else if (message.action === "getEpisode") {
     if (
       (episodeInfo.name &&
@@ -18,11 +18,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       (episodeInfo.number && document.title.includes(episodeInfo.number))
     ) {
       sendResponse({ episode: episodeInfo });
-      return true;
+    } else {
+      getEpisode(message.titleId).then((episode) => {
+        sendResponse({ episode: episode });
+      });
     }
-    getEpisode(message.titleId).then((episode) => {
-      sendResponse({ episode: episode });
-    });
   }
   return true;
 });

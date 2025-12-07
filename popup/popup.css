@@ -6,6 +6,12 @@ body {
   margin: 0;
 }
 
+@-moz-document url-prefix() {
+  body {
+    width: 550px;
+  }
+}
+
 h1 {
   margin: 0.5em 0 0.5em 0.2em;
   font-size: 2em;

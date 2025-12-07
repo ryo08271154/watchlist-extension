@@ -27,7 +27,7 @@ const watchlistSearch = async (query, params = {}) => {
         id: item.getAttribute("href").split("/").pop(),
         name: item.querySelector("h3").textContent,
         description: item.querySelector("p").textContent,
-        url: new URL(item.getAttribute("href"), watchlistUrl),
+        url: new URL(item.getAttribute("href"), watchlistUrl).href,
       });
     }
   }
@@ -56,7 +56,7 @@ const getTitleEpisode = async (titleId) => {
         episode.getElementsByTagName("h3")[1].textContent.match(/\d+/)[0]
       ),
       airDate: episode.querySelector("p").textContent,
-      url: new URL(episode.getAttribute("href"), watchlistUrl),
+      url: new URL(episode.getAttribute("href"), watchlistUrl).href,
     });
   }
   return episodes;
