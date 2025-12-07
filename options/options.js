@@ -16,7 +16,7 @@ const loadSettings = () => {
   chrome.storage.local.get(
     ["watchlistUrl", "showReviewButton", "showReviewDialog"],
     (data) => {
-      watchlistUrl.value = data.watchlistUrl;
+      watchlistUrl.value = data.watchlistUrl ?? "";
       showReviewButton.checked = data.showReviewButton;
       showReviewDialog.checked = data.showReviewDialog;
     }
