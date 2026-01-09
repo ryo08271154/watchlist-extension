@@ -4,6 +4,7 @@ let titleInfo = {
   description: null,
   url: null,
 };
+let searchCandidates = [];
 let episodeInfo = {
   id: null,
   name: null,
@@ -16,7 +17,56 @@ const getTitle = async () => {
   const pageTitle = document.title;
   const hostname = location.hostname;
   const siteName = hostname.replace(/www\./i, "").split(".")[0];
-
+  const excludedWords = [
+    "ビデオ",
+    "TV",
+    "テレビ",
+    "映画",
+    "番組",
+    "アニメ",
+    "漫画",
+    "漫画",
+    "ゲーム",
+    "音楽",
+    "書籍",
+    "本",
+    "作品",
+    "無料",
+    "人気",
+    "No",
+    "動画",
+    "配信",
+    "最新話",
+    "公式",
+    "あらすじ",
+    "感想",
+    "まとめ",
+    "サイト",
+    "ページ",
+    "円",
+    "レビュー",
+    "字幕",
+    "吹き替え",
+    "見放題",
+    "検索",
+    "おすすめ",
+    "独占",
+    "ランキング",
+    "履歴",
+    "購入",
+    "マイリスト",
+    "マイページ",
+    "設定",
+    "アカウント",
+    "ログイン",
+    "ログアウト",
+    "詳細",
+    "情報",
+    "お知らせ",
+    "DM",
+    "ニュース",
+    "メッセージ",
+  ];
   const words = pageTitle
     .normalize("NFKC")
     .replace(/[,\.~!@#\$%\^&\*_\+\-=\{\}\[\]:;"'<>?\\\/\|]/g, " ")
@@ -30,17 +80,46 @@ const getTitle = async () => {
     if (word.includes(siteName) || ["Page", "Warmup"].includes(word)) {
       continue;
     }
+    if (excludedWords.some((ex) => word.includes(ex))) {
+      continue;
+    }
     if (word.length <= 3) {
       continue;
     }
-    const results = await watchlistSearch(word, { type: "title" });
-    if (results[0].length === 0 || results[0].length > 5) {
+
+    let results = await watchlistSearch(word, { type: "title,episode" });
+    let titles = results[0];
+    let episodes = results[1];
+
+    // タイトル名が含まれていないときエピソードからタイトルを特定する
+    if (episodes.length === 1) {
+      results = await watchlistSearch(results[1][0].description, {
+        type: "title",
+      });
+      titles = results[0];
+      episodes = results[1];
+    }
+
+    if (titles.length === 0) {
       continue;
     }
-    titleInfo = results[0][0];
-    return titleInfo;
+    if (titles.length <= 8) {
+      titleInfo = results[0][0];
+      searchCandidates = results[0];
+      searchCandidates.shift(); // 最初の要素は確定したタイトルなので除外
+      return titleInfo;
+    }
   }
   return null;
+};
+const getEpisodeFromCandidates = async () => {
+  for (const candidate of searchCandidates) {
+    const episode = await getEpisode(candidate.id);
+    if (episode) {
+      titleInfo = candidate;
+      return episode;
+    }
+  }
 };
 const getEpisode = async (titleId) => {
   const episodes = await getTitleEpisode(titleId);

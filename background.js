@@ -132,9 +132,5 @@ const checkUpdate = async () => {
   }
 };
 chrome.management.getSelf((info) => {
-  console.log(info);
-  if (info.installType === "development") {
-    console.log("Checking for updates...");
-    checkUpdate();
-  }
+  checkUpdate();
 });

@@ -4,7 +4,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ results: results });
     });
   } else if (message.action === "getTitle") {
-    if (titleInfo.name && document.title.includes(titleInfo.name.slice(0, 6))) {
+    if (titleInfo?.name) {
       sendResponse({ title: titleInfo });
     } else {
       getTitle().then((title) => {
@@ -12,16 +12,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
     }
   } else if (message.action === "getEpisode") {
-    if (
-      (episodeInfo.name &&
-        document.title.includes(episodeInfo.name.slice(0, 6))) ||
-      (episodeInfo.number && document.title.includes(episodeInfo.number))
-    ) {
+    if (episodeInfo?.name) {
       sendResponse({ episode: episodeInfo });
     } else {
-      getEpisode(message.titleId).then((episode) => {
+      (async () => {
+        let episode = await getEpisode();
+        if (!episode) {
+          episode = await getEpisodeFromCandidates();
+        }
         sendResponse({ episode: episode });
-      });
+      })();
     }
   }
   return true;
@@ -39,9 +39,12 @@ async function getInfo() {
   resetInfo();
   await sleep(1000);
   await getTitle();
-  if (titleInfo.id) {
-    await getEpisode(titleInfo.id);
-    if (episodeInfo.id) {
+  if (titleInfo?.id) {
+    let episode = await getEpisode(titleInfo.id);
+    if (!episode) {
+      episode = await getEpisodeFromCandidates();
+    }
+    if (episode?.id) {
       chrome.storage.local.get(
         ["showReviewButton", "showReviewDialog"],
         (data) => {
