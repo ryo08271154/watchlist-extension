@@ -3,7 +3,7 @@
   "description": "視聴記録を簡単に保存するための拡張機能です。",
   "homepage_url": "https://github.com/ryo08271154/watchlist-extension",
   "author": "ryo08271154",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "manifest_version": 3,
   "icons": {
     "16": "icons/icon16.png",

@@ -4,7 +4,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ results: results });
     });
   } else if (message.action === "getTitle") {
-    if (titleInfo?.name) {
+    if (titleInfo?.id) {
       sendResponse({ title: titleInfo });
     } else {
       getTitle().then((title) => {
@@ -12,11 +12,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
     }
   } else if (message.action === "getEpisode") {
-    if (episodeInfo?.name) {
+    if (episodeInfo?.id) {
       sendResponse({ episode: episodeInfo });
     } else {
       (async () => {
-        let episode = await getEpisode();
+        let episode = await getEpisode(message.titleId);
         if (!episode) {
           episode = await getEpisodeFromCandidates();
         }
@@ -27,7 +27,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
-async function getInfo() {
+const removeWatchlistReview = () => {
   const button = document.getElementById("watchlistReviewButton");
   const dialog = document.getElementById("watchlistReviewDialog");
   if (button) {
@@ -36,7 +36,9 @@ async function getInfo() {
   if (dialog) {
     dialog.remove();
   }
-  resetInfo();
+};
+
+async function getInfo() {
   await sleep(1000);
   await getTitle();
   if (titleInfo?.id) {
@@ -48,18 +50,20 @@ async function getInfo() {
       chrome.storage.local.get(
         ["showReviewButton", "showReviewDialog"],
         (data) => {
+          removeWatchlistReview();
           if (data.showReviewButton) {
             addButton(episodeInfo);
           }
           if (data.showReviewDialog) {
             addDialog(titleInfo, episodeInfo);
           }
-        }
+        },
       );
       attachVideoListeners();
     }
   }
 }
+
 window.addEventListener("load", getInfo);
 window.addEventListener("popstate", getInfo);
 window.addEventListener("hashchange", getInfo);
@@ -67,6 +71,8 @@ let lastUrl = location.href;
 new MutationObserver(() => {
   if (lastUrl !== location.href) {
     lastUrl = location.href;
+    removeWatchlistReview();
+    resetInfo();
     getInfo();
   }
 }).observe(document.body, { childList: true, subtree: true });

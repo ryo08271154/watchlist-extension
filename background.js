@@ -124,7 +124,7 @@ const checkUpdate = async () => {
     if (latestVersion !== currentVersion) {
       addMessage(
         "warning",
-        `新しいバージョンが利用可能です: ${latestVersion} (現在のバージョン: ${currentVersion} ${watchlistUrl}/extension からダウンロードしてください。`
+        `新しいバージョンが利用可能です: ${latestVersion} 現在のバージョン: ${currentVersion} ${watchlistUrl}/extension からダウンロードしてください。`
       );
     }
   } catch (error) {

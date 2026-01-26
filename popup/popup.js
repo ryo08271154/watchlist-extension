@@ -69,7 +69,7 @@ async function loadInitialData() {
     hideSearch();
     addMessage(
       "warning",
-      "このブラウザでは一部の機能が動作しない可能性があります。"
+      "このブラウザでは一部の機能が動作しない可能性があります。",
     );
   }
 
@@ -78,10 +78,10 @@ async function loadInitialData() {
       hideSearch();
       addMessage(
         "error",
-        "設定がされていません。オプション画面で設定をしてください。"
+        "設定がされていません。オプション画面で設定をしてください。",
       );
       const result = confirm(
-        "設定がされていません。オプション画面を開きますか？"
+        "設定がされていません。オプション画面を開きますか？",
       );
       if (result) {
         chrome.runtime.openOptionsPage();
@@ -119,7 +119,7 @@ async function loadInitialData() {
           episodeDetail.href = data?.episode.url;
           episodeInfo = data?.episode;
         }
-      }
+      },
     );
   }
 }
@@ -132,7 +132,7 @@ const watchlistSearch = async (query, params) => {
       { action: "watchlistSearch", query: query, params: params },
       (data) => {
         resolve(data?.results ?? []);
-      }
+      },
     );
   });
   await loadMessages();
