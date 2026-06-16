@@ -7,7 +7,7 @@ const getWatchlistUrl = async () => {
   if (!watchlistUrl) {
     addMessage(
       "error",
-      "視聴記録のURLが設定されていません。オプション画面で設定してください。"
+      "視聴記録のURLが設定されていません。オプション画面で設定してください。",
     );
     throw new Error("Watchlist URL is not set");
   }
@@ -31,7 +31,7 @@ const checkLoginStatus = (response) => {
   if (response.url.includes("/login")) {
     addMessage(
       "error",
-      "視聴記録にログインされていません。視聴記録にログインしてください。"
+      "視聴記録にログインされていません。視聴記録にログインしてください。",
     );
     throw new Error("Not logged in to Watchlist");
   }
@@ -41,7 +41,7 @@ const fetchWatchlistSearch = async (query, params) => {
     const watchlistUrl = await getWatchlistUrl();
     const parameter = new URLSearchParams(params).toString();
     const response = await fetch(
-      `${watchlistUrl}/search?q=${query}&${parameter}`
+      `${watchlistUrl}/search?q=${query}&${parameter}`,
     );
     const html = await response.text();
     checkLoginStatus(response);
@@ -50,7 +50,7 @@ const fetchWatchlistSearch = async (query, params) => {
     if (error instanceof TypeError && error.message === "Failed to fetch") {
       addMessage(
         "error",
-        "視聴記録に接続できません。ネットワーク接続と拡張機能のサイトへのアクセスが許可されていることを確認してください。"
+        "視聴記録に接続できません。ネットワーク接続と拡張機能のサイトへのアクセスが許可されていることを確認してください。",
       );
     } else {
       addMessage("error", "視聴記録の検索中にエラーが発生しました。");
@@ -71,7 +71,7 @@ const fetchTitleEpisode = async (titleId) => {
     if (error instanceof TypeError && error.message === "Failed to fetch") {
       addMessage(
         "error",
-        "視聴記録に接続できません。ネットワーク接続と拡張機能のサイトへのアクセスが許可されていることを確認してください。"
+        "視聴記録に接続できません。ネットワーク接続と拡張機能のサイトへのアクセスが許可されていることを確認してください。",
       );
     } else {
       addMessage("error", "エピソード情報の取得中にエラーが発生しました。");
@@ -113,8 +113,8 @@ const checkUpdate = async () => {
     if (!urls) return;
     const targetUrl = urls.find((url) =>
       url.includes(
-        "https://api.github.com/repos/ryo08271154/watchlist-extension/zipball/"
-      )
+        "https://api.github.com/repos/ryo08271154/watchlist-extension/zipball/",
+      ),
     );
     if (!targetUrl) return;
     const match = targetUrl.match(/\/(v[\d.]+)$/);
@@ -124,7 +124,7 @@ const checkUpdate = async () => {
     if (latestVersion !== currentVersion) {
       addMessage(
         "warning",
-        `新しいバージョンが利用可能です: ${latestVersion} 現在のバージョン: ${currentVersion} ${watchlistUrl}/extension からダウンロードしてください。`
+        `新しいバージョンが利用可能です: ${latestVersion} 現在のバージョン: ${currentVersion} ${watchlistUrl}/extension からダウンロードしてください。`,
       );
     }
   } catch (error) {

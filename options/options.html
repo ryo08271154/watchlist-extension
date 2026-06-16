@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
@@ -21,9 +21,22 @@
         >エピソード視聴終了後にレビューダイアログを表示する</label
       >
       <input type="checkbox" name="showReviewDialog" id="showReviewDialog" />
-      <button id="save">保存する</button>
+      <button type="submit" id="save">保存する</button>
     </form>
+    <hr />
+    <h2>検索対象URLの追加</h2>
+    <form>
+      <label for="urlInput">検索対象のURL:</label>
+      <input type="url" name="urlInput" id="urlInput" />
+      <button type="submit" id="addUrlButton">追加</button>
+    </form>
+    <h2>検索対象URL</h2>
+    <p>
+      削除は拡張機能を管理 (<code>chrome://extensions</code>)
+      から行ってください。
+    </p>
+    <ul id="urlList"></ul>
+    <script src="validator.js"></script>
+    <script src="options.js"></script>
   </body>
-  <script src="validator.js"></script>
-  <script src="options.js"></script>
 </html>

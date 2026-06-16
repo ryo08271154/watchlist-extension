@@ -1,6 +1,6 @@
 const validateWatchlistUrl = async (url) => {
   // URLが正しいか検証
-  if (!url || !url.startsWith("http://")) {
+  if (!url || (!url.startsWith("http://") && !url.startsWith("https://"))) {
     return false;
   }
   try {
@@ -19,7 +19,7 @@ const validateSettings = async (settings = null) => {
         ["watchlistUrl", "showReviewButton", "showReviewDialog"],
         (data) => {
           resolve(data);
-        }
+        },
       );
     });
   }

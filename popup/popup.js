@@ -74,7 +74,7 @@ async function loadInitialData() {
   }
 
   chrome.storage.local.get("watchlistUrl", (data) => {
-    if (!data.watchlistUrl || !data.watchlistUrl.startsWith("http://")) {
+    if (!data.watchlistUrl) {
       hideSearch();
       addMessage(
         "error",
